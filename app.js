@@ -571,19 +571,15 @@ function applyTheme(t) {
 }
 
 (function initTheme() {
-  const saved = localStorage.getItem("theme") || "midnight";
-
-  // применяем как можно раньше — до первого рендера, чтобы не мигало
+  const saved = localStorage.getItem("theme") || "graphite";
   document.documentElement.dataset.theme = saved;
 
-  // клик по любой точке
   document.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-theme-set]");
     if (!btn) return;
     applyTheme(btn.dataset.themeSet);
   });
 
-  // проставляем .active на нужной точке после того как DOM готов
   const mark = () => applyTheme(saved);
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", mark, { once: true });
