@@ -1,0 +1,74 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "users": {
+      "$uid": {
+        ".read": true,
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "!data.exists() ? newData.hasChildren(['accountId','displayName','createdAt']) : true",
+        "accountId": {
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{8}$/)"
+        },
+        "displayName": {
+          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 32"
+        },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
+      }
+    },
+
+    "accountIds": {
+      "$id": {
+        ".read": true,
+        ".write": "auth != null && !data.exists() && newData.val() === auth.uid",
+        ".validate": "$id.matches(/^[0-9]{8}$/) && newData.isString()"
+      }
+    },
+
+    "forum": {
+      "branches": {
+        ".read": true,
+        "$branch": {
+          "threads": {
+            "$threadId": {
+              ".read": true,
+              ".write": "auth != null && !data.exists()",
+              ".validate": "!data.exists() ? newData.hasChildren(['title','authorUid','authorId','createdAt','lastPostAt','postCount','posts']) : true",
+              "title": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+              },
+              "authorUid": { ".validate": "newData.val() === auth.uid" },
+              "authorId": {
+                ".validate": "newData.val() === root.child('users').child(auth.uid).child('accountId').val()"
+              },
+              "createdAt": { ".validate": "newData.isNumber()" },
+              "lastPostAt": { ".write": "auth != null", ".validate": "newData.isNumber()" },
+              "postCount": {
+                ".write": "auth != null",
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "posts": {
+                "$postId": {
+                  ".write": "auth != null && !data.exists()",
+                  ".validate": "newData.hasChildren(['text','authorUid','authorId','createdAt'])",
+                  "text": {
+                    ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 5000"
+                  },
+                  "authorUid": { ".validate": "newData.val() === auth.uid" },
+                  "authorId": {
+                    ".validate": "newData.val() === root.child('users').child(auth.uid).child('accountId').val()"
+                  },
+                  "createdAt": { ".validate": "newData.isNumber()" },
+                  "$other": { ".validate": false }
+                }
+              },
+              "$other": { ".validate": false }
+            }
+          }
+        }
+      }
+    }
+  }
+}
