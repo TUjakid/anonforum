@@ -35,6 +35,22 @@ const BRANCHES = [
 ];
 const BRANCH_CODES = BRANCHES.map(b => b.code);
 
+/* ====================== настройки «рандомной» ветки ====================== */
+const RANDOM_BRANCH = "B";
+const RANDOM_COUNT = 5;
+
+let bSeed = null;      // текущая перемешанная последовательность id
+let bShowAll = false;  // показывать ли всё вместо выборки
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -52,9 +68,9 @@ const randId = () => Array.from({ length: ID_LEN }, () => Math.floor(Math.random
 const newKey = (path) => push(ref(db, path)).key;
 
 /* ====================== состояние ====================== */
-let me = null;              // { uid, profile: { accountId, displayName, createdAt } }
+let me = null;
 let profilePromise = null;
-let unsub = null;           // отписка от текущего realtime-листенера
+let unsub = null;
 
 function clearSub() { if (unsub) { unsub(); unsub = null; } }
 
@@ -67,8 +83,8 @@ async function ensureProfile(user) {
   for (let attempt = 0; attempt < 12; attempt++) {
     const candidate = randId();
     const res = await runTransaction(ref(db, `accountIds/${candidate}`), (cur) => {
-      if (cur === null) return user.uid; // занимаем
-      return;                            // занят — abort
+      if (cur === null) return user.uid;
+      return;
     });
     if (!res.committed) continue;
 
@@ -122,7 +138,8 @@ function authError(err) {
     "auth/user-not-found": "Пользователь не найден.",
     "auth/too-many-requests": "Слишком много попыток. Подождите немного.",
     "auth/operation-not-allowed": "В Firebase не включён вход по email/паролю.",
-    "auth/unauthorized-domain": "Домен не добавлен в Authorized domains в Firebase."
+    "auth/unauthorized-domain": "Домен не добавлен в Authorized domains в Firebase.",
+    "auth/configuration-not-found": "В Firebase не настроен вход по email/паролю (Authentication → Sign-in method)."
   };
   return map[err?.code] || err?.message || String(err);
 }
@@ -225,9 +242,20 @@ function renderHome() {
 /* ====================== ветка ====================== */
 function renderBranch(code) {
   const b = BRANCHES.find(x => x.code === code);
+  const isRandom = code === RANDOM_BRANCH;
+
+  // каждый заход в B — новый рандом, если это первый заход в этой сессии
+  if (isRandom) { bSeed = null; bShowAll = false; }
+
   $("app").innerHTML = header(code) + `
     <main>
       <h1>${code} — ${esc(b.title)}</h1>
+      ${isRandom ? `
+        <div class="branch-toolbar">
+          <span class="muted" id="bCount"></span>
+          <button type="button" id="bRefresh" class="secondary">Обновить выбор</button>
+          <button type="button" id="bAll" class="secondary">Показать все</button>
+        </div>` : ""}
       <details class="new-thread">
         <summary>Создать тред</summary>
         <form id="newThread">
@@ -273,29 +301,70 @@ function renderBranch(code) {
     }
   });
 
-  unsub = onValue(ref(db, `forum/branches/${code}/threads`), async (snap) => {
-    const threads = snap.val() || {};
-    const entries = Object.entries(threads)
-      .sort((a, b) => (b[1].lastPostAt || 0) - (a[1].lastPostAt || 0));
-    const box = $("threads");
-    if (!box) return;
+  let currentData = {};
+  const draw = () => renderThreadList(code, currentData);
 
-    if (!entries.length) {
-      box.innerHTML = `<p class="muted">Пока пусто. Создайте первый тред.</p>`;
-      return;
-    }
+  if (isRandom) {
+    $("bRefresh").addEventListener("click", () => {
+      bSeed = null;
+      draw();
+    });
+    $("bAll").addEventListener("click", () => {
+      bShowAll = !bShowAll;
+      $("bAll").textContent = bShowAll ? "Свернуть в рандом" : "Показать все";
+      draw();
+    });
+  }
 
-    const names = await loadNames(entries.map(([, t]) => t.authorUid));
-    box.innerHTML = entries.map(([tid, t]) => `
-      <article class="thread-row">
-        <a class="title" href="#/${code}/${tid}">${esc(t.title)}</a>
-        <div class="muted">
-          ${esc(names[t.authorUid] || "—")} <span class="id">#${esc(t.authorId)}</span>
-          · ${fmt(t.createdAt)}
-          · ответов: ${Math.max(0, (t.postCount || 1) - 1)}
-        </div>
-      </article>`).join("");
+  unsub = onValue(ref(db, `forum/branches/${code}/threads`), (snap) => {
+    currentData = snap.val() || {};
+    draw();
   });
+}
+
+async function renderThreadList(code, threads) {
+  const box = $("threads");
+  if (!box) return;
+  const isRandom = code === RANDOM_BRANCH;
+
+  const entries = Object.entries(threads)
+    .sort((a, b) => (b[1].lastPostAt || 0) - (a[1].lastPostAt || 0));
+
+  if (!entries.length) {
+    box.innerHTML = `<p class="muted">Пока пусто. Создайте первый тред.</p>`;
+    if (isRandom && $("bCount")) $("bCount").textContent = "";
+    return;
+  }
+
+  let shown = entries;
+
+  if (isRandom) {
+    const ids = entries.map(e => e[0]);
+    if (bShowAll) {
+      if ($("bCount")) $("bCount").textContent = `Все треды: ${entries.length}`;
+    } else if (entries.length > RANDOM_COUNT) {
+      if (!bSeed) bSeed = shuffle(ids);
+      for (const id of ids) if (!bSeed.includes(id)) bSeed.push(id);
+      bSeed = bSeed.filter(id => ids.includes(id));
+
+      const pick = new Set(bSeed.slice(0, RANDOM_COUNT));
+      shown = entries.filter(([id]) => pick.has(id));
+      if ($("bCount")) $("bCount").textContent = `Случайные ${shown.length} из ${entries.length}`;
+    } else {
+      if ($("bCount")) $("bCount").textContent = `Все треды: ${entries.length} (мало для рандома)`;
+    }
+  }
+
+  const names = await loadNames(shown.map(([, t]) => t.authorUid));
+  box.innerHTML = shown.map(([tid, t]) => `
+    <article class="thread-row">
+      <a class="title" href="#/${code}/${tid}">${esc(t.title)}</a>
+      <div class="muted">
+        ${esc(names[t.authorUid] || "—")} <span class="id">#${esc(t.authorId)}</span>
+        · ${fmt(t.createdAt)}
+        · ответов: ${Math.max(0, (t.postCount || 1) - 1)}
+      </div>
+    </article>`).join("");
 }
 
 /* ====================== тред ====================== */
