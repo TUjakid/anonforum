@@ -12,7 +12,7 @@ import { firebaseConfig } from "./firebase-config.js";
 const ID_LEN = 8;
 const BRANCHES = [
   { code: "A", title: "Анонсы и правила" },
-  { code: "B", title: "Общее / Random" },
+  { code: "B", title: "Random / Со всего форума" },
   { code: "C", title: "Творчество" },
   { code: "D", title: "Дизайн" },
   { code: "DIY", title: "«Сделай сам»" },
@@ -35,12 +35,12 @@ const BRANCHES = [
 ];
 const BRANCH_CODES = BRANCHES.map(b => b.code);
 
-/* ====================== настройки «рандомной» ветки ====================== */
+/* ====================== настройки «рандомной» ветки B ====================== */
 const RANDOM_BRANCH = "B";
 const RANDOM_COUNT = 5;
 
-let bSeed = null;      // текущая перемешанная последовательность id
-let bShowAll = false;  // показывать ли всё вместо выборки
+let bSeed = null;
+let bShowAll = false;
 
 function shuffle(arr) {
   const a = arr.slice();
@@ -230,6 +230,11 @@ function renderHome() {
   wireHeader();
 
   BRANCHES.forEach(async (b) => {
+    if (b.code === RANDOM_BRANCH) {
+      const el = $(`cnt-${b.code}`);
+      if (el) el.textContent = "случайные треды со всего форума";
+      return;
+    }
     try {
       const s = await get(ref(db, `forum/branches/${b.code}/threads`));
       const n = s.exists() ? Object.keys(s.val()).length : 0;
@@ -244,7 +249,6 @@ function renderBranch(code) {
   const b = BRANCHES.find(x => x.code === code);
   const isRandom = code === RANDOM_BRANCH;
 
-  // каждый заход в B — новый рандом, если это первый заход в этой сессии
   if (isRandom) { bSeed = null; bShowAll = false; }
 
   $("app").innerHTML = header(code) + `
@@ -255,20 +259,26 @@ function renderBranch(code) {
           <span class="muted" id="bCount"></span>
           <button type="button" id="bRefresh" class="secondary">Обновить выбор</button>
           <button type="button" id="bAll" class="secondary">Показать все</button>
-        </div>` : ""}
-      <details class="new-thread">
-        <summary>Создать тред</summary>
-        <form id="newThread">
-          <input id="tTitle" placeholder="Заголовок" maxlength="120" required>
-          <textarea id="tText" placeholder="Текст первого поста" maxlength="5000" required></textarea>
-          <button type="submit">Опубликовать</button>
-          <span class="error" id="tErr"></span>
-        </form>
-      </details>
+        </div>` : `
+        <details class="new-thread">
+          <summary>Создать тред</summary>
+          <form id="newThread">
+            <input id="tTitle" placeholder="Заголовок" maxlength="120" required>
+            <textarea id="tText" placeholder="Текст первого поста" maxlength="5000" required></textarea>
+            <button type="submit">Опубликовать</button>
+            <span class="error" id="tErr"></span>
+          </form>
+        </details>`}
       <div id="threads" class="threads"><p class="muted">Загрузка…</p></div>
     </main>`;
   wireHeader();
 
+  if (isRandom) {
+    renderRandomAll();
+    return;
+  }
+
+  // обычная ветка
   $("newThread").addEventListener("submit", async (e) => {
     e.preventDefault();
     $("tErr").textContent = "";
@@ -301,62 +311,101 @@ function renderBranch(code) {
     }
   });
 
-  let currentData = {};
-  const draw = () => renderThreadList(code, currentData);
-
-  if (isRandom) {
-    $("bRefresh").addEventListener("click", () => {
-      bSeed = null;
-      draw();
-    });
-    $("bAll").addEventListener("click", () => {
-      bShowAll = !bShowAll;
-      $("bAll").textContent = bShowAll ? "Свернуть в рандом" : "Показать все";
-      draw();
-    });
-  }
-
   unsub = onValue(ref(db, `forum/branches/${code}/threads`), (snap) => {
-    currentData = snap.val() || {};
+    renderRegularList(code, snap.val() || {});
+  });
+}
+
+/* ====================== B: рандом со всего форума ====================== */
+function renderRandomAll() {
+  let pool = [];
+
+  const draw = async () => {
+    const box = $("threads");
+    if (!box) return;
+
+    if (!pool.length) {
+      box.innerHTML = `<p class="muted">Пока пусто. Создайте тред в любой ветке — и он попадёт в рандом.</p>`;
+      if ($("bCount")) $("bCount").textContent = "";
+      return;
+    }
+
+    const sorted = pool.slice().sort((a, b) => (b.t.lastPostAt || 0) - (a.t.lastPostAt || 0));
+    const ids = sorted.map(x => x.key);
+    const map = new Map(sorted.map(x => [x.key, x]));
+
+    let shown;
+    if (bShowAll) {
+      shown = sorted;
+      if ($("bCount")) $("bCount").textContent = `Все треды со всего форума: ${sorted.length}`;
+    } else if (sorted.length > RANDOM_COUNT) {
+      if (!bSeed) bSeed = shuffle(ids);
+      for (const id of ids) if (!bSeed.includes(id)) bSeed.push(id);
+      bSeed = bSeed.filter(id => ids.includes(id));
+
+      shown = bSeed.slice(0, RANDOM_COUNT).map(id => map.get(id)).filter(Boolean);
+      if ($("bCount")) $("bCount").textContent = `Случайные ${shown.length} из ${sorted.length} со всего форума`;
+    } else {
+      shown = sorted;
+      if ($("bCount")) $("bCount").textContent = `Все треды: ${sorted.length} (мало для рандома)`;
+    }
+
+    const names = await loadNames(shown.map(x => x.t.authorUid));
+    box.innerHTML = shown.map(x => `
+      <article class="thread-row">
+        <a class="title" href="#/${x.branch}/${x.tid}">${esc(x.t.title)}</a>
+        <div class="muted">
+          <span class="id">${esc(x.branch)}</span>
+          · ${esc(names[x.t.authorUid] || "—")} <span class="id">#${esc(x.t.authorId)}</span>
+          · ${fmt(x.t.createdAt)}
+          · ответов: ${Math.max(0, (x.t.postCount || 1) - 1)}
+        </div>
+      </article>`).join("");
+  };
+
+  $("bRefresh").addEventListener("click", () => {
+    bSeed = null;
+    draw();
+  });
+  $("bAll").addEventListener("click", () => {
+    bShowAll = !bShowAll;
+    $("bAll").textContent = bShowAll ? "Свернуть в рандом" : "Показать все";
+    draw();
+  });
+
+  unsub = onValue(ref(db, "forum/branches"), (snap) => {
+    const branches = snap.val() || {};
+    pool = [];
+    for (const [bcode, br] of Object.entries(branches)) {
+      const threads = br.threads || {};
+      for (const [tid, t] of Object.entries(threads)) {
+        pool.push({
+          key: `${bcode}/${tid}`,
+          branch: bcode,
+          tid,
+          t
+        });
+      }
+    }
     draw();
   });
 }
 
-async function renderThreadList(code, threads) {
+/* ====================== обычный список тредов ====================== */
+async function renderRegularList(code, threads) {
   const box = $("threads");
   if (!box) return;
-  const isRandom = code === RANDOM_BRANCH;
 
   const entries = Object.entries(threads)
     .sort((a, b) => (b[1].lastPostAt || 0) - (a[1].lastPostAt || 0));
 
   if (!entries.length) {
     box.innerHTML = `<p class="muted">Пока пусто. Создайте первый тред.</p>`;
-    if (isRandom && $("bCount")) $("bCount").textContent = "";
     return;
   }
 
-  let shown = entries;
-
-  if (isRandom) {
-    const ids = entries.map(e => e[0]);
-    if (bShowAll) {
-      if ($("bCount")) $("bCount").textContent = `Все треды: ${entries.length}`;
-    } else if (entries.length > RANDOM_COUNT) {
-      if (!bSeed) bSeed = shuffle(ids);
-      for (const id of ids) if (!bSeed.includes(id)) bSeed.push(id);
-      bSeed = bSeed.filter(id => ids.includes(id));
-
-      const pick = new Set(bSeed.slice(0, RANDOM_COUNT));
-      shown = entries.filter(([id]) => pick.has(id));
-      if ($("bCount")) $("bCount").textContent = `Случайные ${shown.length} из ${entries.length}`;
-    } else {
-      if ($("bCount")) $("bCount").textContent = `Все треды: ${entries.length} (мало для рандома)`;
-    }
-  }
-
-  const names = await loadNames(shown.map(([, t]) => t.authorUid));
-  box.innerHTML = shown.map(([tid, t]) => `
+  const names = await loadNames(entries.map(([, t]) => t.authorUid));
+  box.innerHTML = entries.map(([tid, t]) => `
     <article class="thread-row">
       <a class="title" href="#/${code}/${tid}">${esc(t.title)}</a>
       <div class="muted">
