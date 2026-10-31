@@ -15,8 +15,19 @@ const BRANCHES = [
   { code: "B", title: "Общее / Random" },
   { code: "C", title: "Творчество" },
   { code: "D", title: "Дизайн" },
+  { code: "DIY", title: "«Сделай сам»" },
   { code: "T", title: "Технологии" },
-  { code: "Q", title: "Вопросы и помощь" }
+  { code: "Q", title: "Вопросы и помощь" },
+  { code: "G", title: "Игры" },
+  { code: "M", title: "Военная ветка" },
+  { code: "S", title: "Спорт" },
+  { code: "F", title: "Кино и сериалы" },
+  { code: "L", title: "Литература" },
+  { code: "Lang", title: "Языки" },
+  { code: "An", title: "Аниме/Манга" },
+  { code: "R", title: "Отношения" },
+  { code: "H", title: "Здоровье" },
+  { code: "W", title: "Работа и вакансии" }
 ];
 const BRANCH_CODES = BRANCHES.map(b => b.code);
 
