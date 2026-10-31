@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="midnight">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,6 +8,16 @@
 </head>
 <body>
   <div id="app"></div>
+
+  <!-- Переключатель тем -->
+  <div class="theme-switch" id="themeSwitch" role="group" aria-label="Тема оформления">
+    <button type="button" class="theme-dot midnight" data-theme-set="midnight" title="Midnight" aria-label="Midnight"></button>
+    <button type="button" class="theme-dot sunset"   data-theme-set="sunset"   title="Sunset"   aria-label="Sunset"></button>
+    <button type="button" class="theme-dot forest"   data-theme-set="forest"   title="Forest"   aria-label="Forest"></button>
+    <button type="button" class="theme-dot cyber"    data-theme-set="cyber"    title="Cyber"    aria-label="Cyber"></button>
+    <button type="button" class="theme-dot daylight" data-theme-set="daylight" title="Daylight" aria-label="Daylight"></button>
+  </div>
+
   <noscript>Для работы доски включите JavaScript.</noscript>
   <script type="module" src="app.js"></script>
 </body>
