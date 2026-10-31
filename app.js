@@ -23,8 +23,8 @@ const BRANCHES = [
   { code: "S", title: "Спорт" },
   { code: "F", title: "Кино и сериалы" },
   { code: "L", title: "Литература" },
-  { code: "Lang", title: "Языки" },
-  { code: "An", title: "Аниме/Манга" },
+  { code: "LANG", title: "Языки" },
+  { code: "AN", title: "Аниме/Манга" },
   { code: "R", title: "Отношения" },
   { code: "H", title: "Здоровье" },
   { code: "W", title: "Работа и вакансии" }
