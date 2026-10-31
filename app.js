@@ -21,6 +21,7 @@ const BRANCHES = [
   { code: "G", title: "Игры" },
   { code: "M", title: "Военная ветка" },
   { code: "MU", title: "Музыка" },
+  { code: "MEM", title: "Анекдоты/Шутки" },
   { code: "META", title: "Проблемы и баги форума" },
   { code: "S", title: "Спорт" },
   { code: "PROG", title: "Программирование" },
