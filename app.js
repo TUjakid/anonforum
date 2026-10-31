@@ -560,3 +560,34 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 window.addEventListener("hashchange", () => route());
+
+/* ====================== темы ====================== */
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem("theme", t);
+  document.querySelectorAll("[data-theme-set]").forEach(b =>
+    b.classList.toggle("active", b.dataset.themeSet === t)
+  );
+}
+
+(function initTheme() {
+  const saved = localStorage.getItem("theme") || "midnight";
+
+  // применяем как можно раньше — до первого рендера, чтобы не мигало
+  document.documentElement.dataset.theme = saved;
+
+  // клик по любой точке
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-theme-set]");
+    if (!btn) return;
+    applyTheme(btn.dataset.themeSet);
+  });
+
+  // проставляем .active на нужной точке после того как DOM готов
+  const mark = () => applyTheme(saved);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mark, { once: true });
+  } else {
+    mark();
+  }
+})();
