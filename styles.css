@@ -1,86 +1,540 @@
-:root {
-  --bg: #16181c;
-  --panel: #1d2026;
-  --panel-2: #22262e;
-  --text: #d7d9dd;
-  --muted: #8b8f98;
-  --link: #8ab4f8;
-  --accent: #d4a24a;
-  --border: #2c313a;
-  --error: #ff6b6b;
+/* ============================================================
+   ТЕМЫ. Переключаются атрибутом data-theme на <html>:
+   <html data-theme="midnight">   (по умолчанию)
+   <html data-theme="sunset">
+   <html data-theme="forest">
+   <html data-theme="cyber">
+   <html data-theme="daylight">
+   ============================================================ */
+
+:root,
+:root[data-theme="midnight"] {
+  --bg:        #0e1117;
+  --bg-2:      #141924;
+  --panel:     #1a2030;
+  --panel-2:   #232b40;
+  --border:    #2b3450;
+  --text:      #e6e9f0;
+  --muted:     #8b93a7;
+  --link:      #7cc4ff;
+  --accent:    #ff4fa3;
+  --accent-2:  #7c5cff;
+  --ok:        #4ade80;
+  --error:     #ff6b6b;
+  --grad:      linear-gradient(135deg, #ff4fa3 0%, #7c5cff 100%);
+  --grad-soft: linear-gradient(135deg, rgba(255,79,163,.15), rgba(124,92,255,.15));
+  --shadow:    0 10px 30px rgba(0,0,0,.45);
+  --radius:    10px;
+  --op-glow:   0 0 0 1px rgba(255,79,163,.6), 0 0 24px rgba(255,79,163,.18);
 }
+
+:root[data-theme="sunset"] {
+  --bg:        #1a0f14;
+  --bg-2:      #241419;
+  --panel:     #2b181f;
+  --panel-2:   #3a1f29;
+  --border:    #4a2834;
+  --text:      #ffe9e0;
+  --muted:     #c39aa0;
+  --link:      #ffb27a;
+  --accent:    #ff7a3d;
+  --accent-2:  #ff3d77;
+  --ok:        #6ee7a8;
+  --error:     #ff6b6b;
+  --grad:      linear-gradient(135deg, #ff7a3d 0%, #ff3d77 100%);
+  --grad-soft: linear-gradient(135deg, rgba(255,122,61,.18), rgba(255,61,119,.18));
+  --shadow:    0 10px 30px rgba(0,0,0,.5);
+  --radius:    10px;
+  --op-glow:   0 0 0 1px rgba(255,122,61,.6), 0 0 24px rgba(255,122,61,.2);
+}
+
+:root[data-theme="forest"] {
+  --bg:        #0b1512;
+  --bg-2:      #0f1d19;
+  --panel:     #12241e;
+  --panel-2:   #1a3229;
+  --border:    #234438;
+  --text:      #e3f5ec;
+  --muted:     #84a99a;
+  --link:      #7dffc0;
+  --accent:    #2ee6a0;
+  --accent-2:  #8ef07a;
+  --ok:        #4ade80;
+  --error:     #ff7b7b;
+  --grad:      linear-gradient(135deg, #2ee6a0 0%, #8ef07a 100%);
+  --grad-soft: linear-gradient(135deg, rgba(46,230,160,.15), rgba(142,240,122,.15));
+  --shadow:    0 10px 30px rgba(0,0,0,.45);
+  --radius:    10px;
+  --op-glow:   0 0 0 1px rgba(46,230,160,.6), 0 0 24px rgba(46,230,160,.18);
+}
+
+:root[data-theme="cyber"] {
+  --bg:        #0a0716;
+  --bg-2:      #120b25;
+  --panel:     #170f33;
+  --panel-2:   #221546;
+  --border:    #321f66;
+  --text:      #e7e3ff;
+  --muted:     #9a8fc7;
+  --link:      #6ff9ff;
+  --accent:    #00e5ff;
+  --accent-2:  #b14dff;
+  --ok:        #5effb0;
+  --error:     #ff5c8a;
+  --grad:      linear-gradient(135deg, #00e5ff 0%, #b14dff 100%);
+  --grad-soft: linear-gradient(135deg, rgba(0,229,255,.16), rgba(177,77,255,.16));
+  --shadow:    0 10px 30px rgba(0,0,0,.55);
+  --radius:    10px;
+  --op-glow:   0 0 0 1px rgba(0,229,255,.6), 0 0 24px rgba(0,229,255,.22);
+}
+
+:root[data-theme="daylight"] {
+  --bg:        #f4f6fb;
+  --bg-2:      #e9edf7;
+  --panel:     #ffffff;
+  --panel-2:   #eef2fb;
+  --border:    #d7def0;
+  --text:      #17203a;
+  --muted:     #66718f;
+  --link:      #2a6df5;
+  --accent:    #ff4fa3;
+  --accent-2:  #5b6bff;
+  --ok:        #17a673;
+  --error:     #e04242;
+  --grad:      linear-gradient(135deg, #ff4fa3 0%, #5b6bff 100%);
+  --grad-soft: linear-gradient(135deg, rgba(255,79,163,.10), rgba(91,107,255,.10));
+  --shadow:    0 10px 30px rgba(31,45,90,.12);
+  --radius:    10px;
+  --op-glow:   0 0 0 1px rgba(255,79,163,.5), 0 8px 24px rgba(255,79,163,.12);
+}
+
+/* ============================================================
+   БАЗА
+   ============================================================ */
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-}
-a { color: var(--link); text-decoration: none; }
-a:hover { text-decoration: underline; }
-#app { max-width: 900px; margin: 0 auto; padding: 0 16px 64px; }
 
+body {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, var(--grad-soft), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, var(--grad-soft), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+  min-height: 100vh;
+  transition: background .3s ease, color .3s ease;
+}
+
+a { color: var(--link); text-decoration: none; transition: color .15s ease; }
+a:hover { color: var(--accent); }
+
+#app { max-width: 980px; margin: 0 auto; padding: 0 18px 80px; }
+
+::selection { background: var(--accent); color: #fff; }
+
+/* скроллбар (webkit) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--panel-2);
+  border-radius: 10px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ============================================================
+   ХЕДЕР
+   ============================================================ */
 header.top {
   display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
-  padding: 12px 0; border-bottom: 1px solid var(--border); margin-bottom: 20px;
-  position: sticky; top: 0; background: var(--bg); z-index: 5;
+  padding: 14px 0; margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
 }
-.brand { font-weight: 700; color: var(--accent); letter-spacing: .5px; }
-header.top nav { display: flex; gap: 6px; flex-wrap: wrap; }
-header.top nav a {
-  padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--text);
-}
-header.top nav a.active { background: var(--panel-2); border-color: var(--accent); color: var(--accent); }
-.me { margin-left: auto; display: flex; gap: 8px; align-items: center; font-size: 14px; }
-.id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
 
-button {
-  font: inherit; background: var(--panel-2); color: var(--text);
-  border: 1px solid var(--border); border-radius: 4px; padding: 6px 12px; cursor: pointer;
+.brand {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: .5px;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-button:hover { border-color: var(--accent); }
+.brand:hover { filter: brightness(1.15); }
+
+header.top nav { display: flex; gap: 6px; flex-wrap: wrap; }
+
+header.top nav a {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--panel);
+  transition: transform .12s ease, border-color .15s ease, color .15s ease, background .15s ease;
+}
+header.top nav a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+header.top nav a.active {
+  background: var(--grad);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+
+.me {
+  margin-left: auto;
+  display: flex; gap: 10px; align-items: center;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+.me > a { font-weight: 600; }
+
+.id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* ============================================================
+   КНОПКИ / ПОЛЯ
+   ============================================================ */
+button {
+  font: inherit;
+  font-weight: 600;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+button:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
+}
+button:active { transform: translateY(0); }
+
+button.primary,
+button[type="submit"]:not(.secondary):not(.link) {
+  background: var(--grad);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0,0,0,.25);
+}
+button.primary:hover,
+button[type="submit"]:not(.secondary):not(.link):hover {
+  filter: brightness(1.08);
+}
+
 button.secondary { background: transparent; }
-button.link { background: none; border: none; color: var(--muted); padding: 0; text-decoration: underline; }
+
+button.link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 0;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+button.link:hover { color: var(--accent); box-shadow: none; transform: none; }
 
 input, textarea {
-  font: inherit; background: var(--panel); color: var(--text);
-  border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%;
+  font: inherit;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
 }
-textarea { min-height: 90px; resize: vertical; }
-label { display: block; margin-bottom: 10px; font-size: 14px; color: var(--muted); }
-form .row { display: flex; gap: 8px; margin-top: 8px; }
+input::placeholder, textarea::placeholder { color: var(--muted); }
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+textarea { min-height: 100px; resize: vertical; }
+
+label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+  color: var(--muted);
+  font-weight: 500;
+}
+form .row { display: flex; gap: 10px; margin-top: 10px; }
 
 .muted { color: var(--muted); }
-.error { color: var(--error); }
-h1 { font-size: 20px; margin: 16px 0; }
-h2 { font-size: 17px; margin: 20px 0 8px; }
+.error { color: var(--error); font-weight: 500; }
 
-ul.branches { list-style: none; padding: 0; }
-ul.branches li { padding: 10px 0; border-bottom: 1px solid var(--border); }
-
-.auth { max-width: 380px; margin: 60px auto; }
-
-.threads .thread-row { padding: 10px 0; border-bottom: 1px solid var(--border); }
-.thread-row .title { font-weight: 600; }
-
-.post {
-  border: 1px solid var(--border); background: var(--panel);
-  border-radius: 6px; padding: 10px 12px; margin: 10px 0;
+h1 {
+  font-size: 22px;
+  margin: 18px 0 14px;
+  letter-spacing: -.2px;
 }
-.post.op { border-color: var(--accent); }
-.post .meta { display: flex; gap: 8px; align-items: baseline; font-size: 13px; margin-bottom: 6px; flex-wrap: wrap; }
-.post .text { word-wrap: break-word; }
-.tag { font-size: 11px; padding: 1px 6px; border: 1px solid var(--accent); border-radius: 3px; color: var(--accent); }
+h2 { font-size: 17px; margin: 24px 0 10px; }
 
-.reply { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
-.reply button { align-self: flex-start; }
+/* ============================================================
+   АВТОРИЗАЦИЯ
+   ============================================================ */
+.auth {
+  max-width: 400px;
+  margin: 70px auto;
+  padding: 28px 24px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.auth::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: var(--grad-soft);
+  pointer-events: none;
+}
+.auth > * { position: relative; }
+.auth h1 {
+  margin-top: 0;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
+/* ============================================================
+   ГЛАВНАЯ
+   ============================================================ */
+ul.branches {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+ul.branches li {
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease;
+}
+ul.branches li:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+ul.branches li a {
+  font-size: 15px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+ul.branches li a b {
+  display: inline-block;
+  min-width: 34px;
+  padding: 1px 8px;
+  margin-right: 6px;
+  border-radius: 6px;
+  background: var(--grad);
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: .3px;
+  text-align: center;
+}
+
+/* ============================================================
+   ТУЛБАР РАНДОМА
+   ============================================================ */
+.branch-toolbar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin: 8px 0 16px;
+  padding: 10px 12px;
+  background: var(--grad-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.branch-toolbar .muted { font-size: 13px; font-weight: 500; }
+
+/* ============================================================
+   СОЗДАНИЕ ТРЕДА
+   ============================================================ */
 details.new-thread {
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 6px; padding: 10px 12px; margin-bottom: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0;
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: border-color .15s ease;
 }
-details.new-thread summary { cursor: pointer; color: var(--muted); }
-details.new-thread form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+details.new-thread[open] { border-color: var(--accent); }
+details.new-thread summary {
+  cursor: pointer;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--panel-2);
+  list-style: none;
+  user-select: none;
+}
+details.new-thread summary::-webkit-details-marker { display: none; }
+details.new-thread summary::before {
+  content: "＋";
+  display: inline-block;
+  margin-right: 8px;
+  color: var(--accent);
+  font-weight: 800;
+  transition: transform .15s ease;
+}
+details.new-thread[open] summary::before { content: "−"; }
+details.new-thread form {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px 16px;
+}
 details.new-thread button { align-self: flex-start; }
 
-.snippet { font-size: 13px; color: var(--muted); margin-top: 2px; }
+/* ============================================================
+   СПИСОК ТРЕДОВ
+   ============================================================ */
+.threads { display: flex; flex-direction: column; gap: 10px; }
+
+.thread-row {
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  border-radius: var(--radius);
+  transition: border-color .15s ease, transform .12s ease, box-shadow .15s ease, background .15s ease;
+}
+.thread-row:hover {
+  border-left-color: var(--accent);
+  transform: translateX(2px);
+  box-shadow: var(--shadow);
+}
+.thread-row .title {
+  font-weight: 700;
+  font-size: 15.5px;
+  color: var(--text);
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.thread-row .title:hover { color: var(--accent); }
+.thread-row .muted { font-size: 13px; }
+
+/* ============================================================
+   ПОСТЫ
+   ============================================================ */
+.post {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 12px 0;
+  transition: border-color .15s ease;
+}
+.post:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+
+.post.op {
+  background:
+    var(--grad-soft),
+    var(--panel);
+  box-shadow: var(--op-glow);
+  border-color: transparent;
+}
+
+.post .meta {
+  display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: var(--muted);
+}
+.post .meta b { color: var(--text); font-size: 14px; }
+.post .text {
+  word-wrap: break-word;
+  white-space: normal;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--grad);
+  color: #fff;
+}
+
+.reply {
+  margin-top: 22px;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.reply button { align-self: flex-start; }
+
+.snippet {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+  padding-left: 10px;
+  border-left: 2px solid var(--border);
+}
+
+/* ============================================================
+   ПРОФИЛЬ
+   ============================================================ */
+.rename {
+  display: flex; flex-direction: column; gap: 10px;
+  max-width: 380px;
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.rename button { align-self: flex-start; }
+
+#myThreads ul, #myPosts ul {
+  list-style: none;
+  padding: 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+#myThreads li, #myPosts li {
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+#myThreads li .muted, #myPosts li .muted { font-size: 12.5px; margin-left: 8px; }
+
+/* ============================================================
+   АДАПТИВ
+   ============================================================ */
+@media (max-width: 640px) {
+  header.top { gap: 8px; }
+  header.top nav a { padding: 3px 8px; font-size: 12px; }
+  .me { margin-left: 0; width: 100%; justify-content: space-between; }
+  #app { padding: 0 12px 60px; }
+  ul.branches { grid-template-columns: 1fr; }
+  .post, .thread-row { padding: 12px; }
+}
